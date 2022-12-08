@@ -1,6 +1,5 @@
-/natours-project
 /natours-project/node_modules
-# /express-basics
+/natours-project/.eslintrc.json
 /express-basics/node_modules
 
 
