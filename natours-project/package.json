@@ -1,21 +1,26 @@
 {
-  "name": "natours-project",
+  "name": "natours",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Learning node, express and mongoDB",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "nodemon server.js",
-    "start:prod": "NODE_ENV=production nodemon server,js"
+    "start": "nodemon server.js",
+    "start:prod": "NODE_ENV=production nodemon server.js",
+    "debug": "ndb server.js"
   },
-  "author": "sarmad",
+  "author": "Jonas Schmedtmann",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.0.3",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mongoose": "^6.8.0",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.20",
+    "slugify": "^1.6.5",
+    "validator": "^13.7.0"
   },
   "devDependencies": {
-    "eslint": "^8.28.0",
+    "eslint": "^8.29.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
@@ -23,7 +28,9 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.31.11",
-    "nodemon": "^2.0.20",
-    "prettier": "^2.8.0"
+    "prettier": "^2.8.1"
+  },
+  "engines": {
+    "node": ">=10.0.0"
   }
 }

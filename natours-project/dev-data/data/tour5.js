@@ -1,5 +1,5 @@
 /* eslint-disable */
-export const tour5 = {
+const tour5 = {
   id: 5,
   name: 'The Sports Lover',
   startLocation: 'California, USA',
