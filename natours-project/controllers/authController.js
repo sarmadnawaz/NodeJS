@@ -17,6 +17,7 @@ module.exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
+    role: req.body.role,
   });
   const token = signToken(newUser._id);
   res.status(201).json({
@@ -87,3 +88,13 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = user;
   next();
 });
+
+// restricting users from doing something based on their roles
+exports.restrictTo =
+  (...roles) =>
+  (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(new AppError('you have not authorized to delete tour', 403));
+    }
+    next();
+};
