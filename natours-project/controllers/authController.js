@@ -4,6 +4,7 @@ const User = require('../models/userModal');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const bcrypt = require('bcryptjs');
+const { sendEmail } = require('../utils/email');
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -97,4 +98,41 @@ exports.restrictTo =
       return next(new AppError('you have not authorized to delete tour', 403));
     }
     next();
-};
+  };
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // Get a user on posted email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError('No user found with this credentials', 404));
+  }
+  // Generate the random reset token
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+
+  const resetURL = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/users/resetpassword/${resetToken}`;
+  const message = `Forgot your password? Submit a patch request with your new password and confirm password to : ${resetURL}. \n if you didn't forget you password, please ignore`;
+  try {
+    // sending email to client
+    await sendEmail({
+      email: user.email,
+      subject: 'Your password reset token (valid for 10 min only)',
+      message,
+    });
+    res.status(200).json({
+      status: 'success',
+      message: 'Token has been send successfully',
+    });
+  } catch (err) {
+    (user.passwordResetToken = undefined),
+      (user.passwordResetExpires = undefined),
+      await user.save({ validateBeforeSave: false });
+    return next(
+      new AppError(
+        `${err.message}There was an error happen during sending email. Please try again!`
+      )
+    );
+  }
+});
