@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModal');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { sendEmail } = require('../utils/email');
 
 const signToken = (id) =>
@@ -135,4 +135,38 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       )
     );
   }
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  //* Fetching User from DATABASE based on provided token
+  // Hashing token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  //* Checking if token does belong to any user
+  if (!user) {
+    return next(new AppError('Token is invalid or has expired', 400));
+  }
+  console.log(user);
+  console.log(req.body);
+  //* reseting password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  const token = signToken(user._id);
+  res.status(200).json({
+    status: 200,
+    message:
+      'Password has been successfully updated and user has been logged in',
+    token,
+  });
 });
