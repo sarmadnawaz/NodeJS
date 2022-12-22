@@ -11,6 +11,17 @@ const signToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
+const createSendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
+  });
+};
+
 module.exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     name: req.body.name,
@@ -20,12 +31,7 @@ module.exports.signup = catchAsync(async (req, res, next) => {
     passwordChangedAt: req.body.passwordChangedAt,
     role: req.body.role,
   });
-  const token = signToken(newUser._id);
-  res.status(201).json({
-    status: 'success',
-    message: 'User has been successfully created',
-    token,
-  });
+  createSendToken(newUser, 201, res);
 });
 
 module.exports.signin = catchAsync(async (req, res, next) => {
@@ -169,4 +175,18 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
       'Password has been successfully updated and user has been logged in',
     token,
   });
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // Getting user from DB
+  const user = await User.findById(req.user._id).select('+password');
+  // Verfiy the current password
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+    return next(new AppError('Your current password is wrong', 401));
+  }
+  // Updating Password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  await user.save();
+  createSendToken(user, 200, res);
 });

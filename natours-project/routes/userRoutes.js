@@ -3,7 +3,9 @@ const {
   signup,
   signin,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  updatePassword,
+  protect
 } = require('../controllers/authController');
 const userController = require('./../controllers/userController');
 
@@ -13,6 +15,8 @@ router.route('/signup').post(signup);
 router.route('/signin').post(signin);
 
 router.route('/forgotpassword').post(forgotPassword);
+router.route('/updatepassword').post(protect, updatePassword);
+
 router.route('/resetpassword/:token').patch(resetPassword);
 
 router
