@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema({
   passwordResetToken: String,
   passwordResetExpires: Date,
   photo: String,
+  active: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 //* ENCRYPTING THE PASSWORD *\\
@@ -62,6 +66,11 @@ userSchema.pre('save', function (next) {
   next();
 });
 
+// Will return only active user
+userSchema.pre(/^find/, function (next) {
+  this.find({ active: true });
+  next();
+});
 userSchema.methods.correctPassword = async function (
   providedPassword,
   realPassword
