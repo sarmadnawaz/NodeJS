@@ -23,14 +23,7 @@ const createSendToken = (user, statusCode, res) => {
 };
 
 module.exports.signup = catchAsync(async (req, res, next) => {
-  const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm,
-    passwordChangedAt: req.body.passwordChangedAt,
-    role: req.body.role,
-  });
+  const newUser = await User.create(req.body);
   createSendToken(newUser, 201, res);
 });
 
@@ -159,8 +152,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError('Token is invalid or has expired', 400));
   }
-  console.log(user);
-  console.log(req.body);
   //* reseting password
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
