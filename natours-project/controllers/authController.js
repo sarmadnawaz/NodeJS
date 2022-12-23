@@ -13,6 +13,17 @@ const signToken = (id) =>
 
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
+  const cookiesOption = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    // secure: true,
+    httpOnly: true, // this will make cookie unaccessible and unmodifible by browser
+  };
+  if (process.env.NODE_ENV === 'production') cookiesOption.secure = true;
+  res.cookie('jwt', token, cookiesOption);
+  // removed password
+  user.password = undefined
   res.status(statusCode).json({
     status: 'success',
     token,
@@ -37,12 +48,7 @@ module.exports.signin = catchAsync(async (req, res, next) => {
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password', 401)); // 401 unAuthorized
   }
-  const token = signToken(user._id);
-  res.status(200).json({
-    status: 'success',
-    message: 'User has been signed in',
-    token,
-  });
+  createSendToken(user, 201, res);
   // Checking Password
 });
 
@@ -159,13 +165,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetExpires = undefined;
   await user.save();
 
-  const token = signToken(user._id);
-  res.status(200).json({
-    status: 200,
-    message:
-      'Password has been successfully updated and user has been logged in',
-    token,
-  });
+  createSendToken(user, 200, res);
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
